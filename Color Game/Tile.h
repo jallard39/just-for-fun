@@ -9,13 +9,13 @@ class Tile {
 
 public:
 	bool containsMouse = false;
+	float rootMovPos[2] = { 0.0f, 0.0f };
 
 private:
 	int id;
 	bool moving = false;
-	float color[3] = { 1.0f, 1.0f, 1.0f };
 	float pos[2] = { 0.0f, 0.0f };
-	float rootMovPos[2] = { 0.0f, 0.0f };
+	float color[3] = { 1.0f, 1.0f, 1.0f };
 	float prevMousePos[2] = { -1.0f, -1.0f };
 
 public:
@@ -24,6 +24,7 @@ public:
 	Tile(int numID, float x, float y, float c1, float c2, float c3);
 	int getID();
 	bool isMoving();
+	void stopMoving();
 	bool checkCollision(float x, float y);
 	float getColor(int rgb);
 	void setColor(float c1, float c2, float c3);

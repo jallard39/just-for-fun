@@ -4,6 +4,8 @@ Tile::Tile(int numID, float x, float y) {
 	id = numID;
 	pos[0] = x;
 	pos[1] = y;
+	rootMovPos[0] = pos[0];
+	rootMovPos[1] = pos[1];
 }
 
 Tile::Tile(int numID, float c1, float c2, float c3) {
@@ -11,6 +13,8 @@ Tile::Tile(int numID, float c1, float c2, float c3) {
 	color[0] = c1;
 	color[1] = c2;
 	color[2] = c3;
+	rootMovPos[0] = pos[0];
+	rootMovPos[1] = pos[1];
 }
 
 Tile::Tile(int numID, float x, float y, float c1, float c2, float c3) {
@@ -20,6 +24,8 @@ Tile::Tile(int numID, float x, float y, float c1, float c2, float c3) {
 	color[0] = c1;
 	color[1] = c2;
 	color[2] = c3;
+	rootMovPos[0] = pos[0];
+	rootMovPos[1] = pos[1];
 }
 
 int Tile::getID() {
@@ -28,6 +34,10 @@ int Tile::getID() {
 
 bool Tile::isMoving() {
 	return moving;
+}
+
+void Tile::stopMoving() {
+	moving = false;
 }
 
 float Tile::getColor(int rgb) {
@@ -45,6 +55,8 @@ void Tile::setColor(float c1, float c2, float c3) {
 void Tile::setPosition(float x, float y) {
 	pos[0] = x;
 	pos[1] = y;
+	rootMovPos[0] = pos[0];
+	rootMovPos[1] = pos[1];
 }
 
 void Tile::setMousePosition(float x, float y) {

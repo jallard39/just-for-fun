@@ -14,6 +14,11 @@ using namespace std;
 
 // = = = = = Variables = = = = =
 
+enum GameState {
+    Game,
+    GameEnd
+};
+
 float gridSize = 80;
 int gridDimensions[] = { 7, 7 };
 
@@ -21,6 +26,8 @@ int w = gridDimensions[0];
 int h = gridDimensions[1];
 
 int* grid;
+
+GameState gameState = Game;
 
 float cornerColors[] = {
     0.79f, 1.0f, 0.24f,
@@ -31,6 +38,9 @@ float cornerColors[] = {
 
 Tile** tiles;
 int activeTile = 0;
+int markedTile = -1;
+
+float prevMousePos[2] = { -1.0f, -1.0f };
 
 // = = = = = Helper Functions = = = = =
 
@@ -97,6 +107,18 @@ void initTiles() {
     }
 }
 
+
+void swapTiles(int t1, int t2) {
+    float tempPos[2] = { tiles[grid[t2]]->rootMovPos[0], tiles[grid[t2]]->rootMovPos[1] };
+    tiles[grid[t2]]->setPosition(tiles[grid[t1]]->rootMovPos[0], tiles[grid[t1]]->rootMovPos[1]);
+    tiles[grid[t1]]->setPosition(tempPos[0], tempPos[1]);
+    tiles[grid[t2]]->stopMoving();
+    tiles[grid[t1]]->stopMoving();
+    int temp = grid[t2];
+    grid[t2] = grid[t1];
+    grid[t1] = temp;
+}
+
 // = = = = = Callback Functions = = = = =
 
 void init(void)
@@ -108,27 +130,101 @@ void init(void)
     // initialize tiles
     initTiles();
     srand(time(NULL));
+    grid[0] = 0;
+    grid[w * h - h] = w * h - h;
+    grid[w * h - 1] = w * h - 1;
+    grid[h - 1] = h - 1;
     for (int i = 0; i < w * h; i++) {
-        int pos = rand() % (w * h);
-        while (grid[pos] != -1) {
-            pos = (pos + 1) % (w * h);
+        if (i != 0 && i != w * h - h && i != w * h - 1 && i != h - 1) {
+            int pos = rand() % (w * h);
+            while (grid[pos] != -1) {
+                pos = (pos + 1) % (w * h);
+            }
+            grid[pos] = i;
+            tiles[i]->setPosition((int)(pos / h), pos % h);
         }
-        grid[pos] = i;
-        tiles[i]->setPosition((int)(pos / h), pos % h);
     }
 }
 
 void mouseClick(int button, int state, int x, int y) {
+    if (button == GLUT_LEFT_BUTTON && state == GLUT_UP && tiles[grid[activeTile]]->isMoving()) {
+        int swapTile = ((int)(x / gridSize) * h) + (int)(((h * gridSize) - y) / gridSize);
+        swapTiles(activeTile, swapTile);
+    }
     for (int i = 0; i < w * h; i++) {
         tiles[i]->toggleMovement(button, state, x / gridSize, ((h * gridSize) - y) / gridSize);
     }
+    prevMousePos[0] = x / gridSize;
+    prevMousePos[1] = ((h * gridSize) - y) / gridSize;
 }
 
 void mouseMove(int x, int y) {
-    for (int i = 0; i < w * h; i++) {
-        tiles[i]->move(x / gridSize, ((h * gridSize) - y) / gridSize);
+    float mouseX = x / gridSize;
+    float mouseY = ((h * gridSize) - y) / gridSize;
+    markedTile = -1;
+    if (prevMousePos[0] != -1) {
+        if (mouseX + (mouseX - prevMousePos[0]) <= 0 ||
+            mouseX + (mouseX - prevMousePos[0]) >= w ||
+            mouseY + (mouseY - prevMousePos[1]) <= 0 ||
+            mouseY + (mouseY - prevMousePos[1]) >= h ) {
+            for (int i = 0; i < w * h; i++) {
+                tiles[i]->containsMouse = false;
+                if (tiles[i]->isMoving()) {
+                    swapTiles(activeTile, ((int)mouseX * h) + (int)mouseY);
+                }
+            }
+        }
+        else {
+            for (int i = 0; i < w * h; i++) {
+                tiles[i]->move(x / gridSize, ((h * gridSize) - y) / gridSize);
+            }
+        }
     }
+    prevMousePos[0] = mouseX;
+    prevMousePos[1] = mouseY;
 }
+
+void keyboard(unsigned char key, int x, int y) {
+    switch (gameState) {
+    case Game:
+
+        if (key == 'w') {
+            if ((activeTile + 1) % h != 0) {
+                activeTile += 1;
+            }
+        }
+        else if (key == 's') {
+            if (activeTile % h != 0) {
+                activeTile -= 1;
+            }
+        }
+        else if (key == 'd') {
+            if (activeTile + h < w * h) {
+                activeTile += h;
+            }
+        }
+        else if (key == 'a') {
+            if (activeTile - h >= 0) {
+                activeTile -= h;
+            }
+        }
+        else if (key == 32) {
+            if (markedTile == -1) {
+                markedTile = activeTile;
+            }
+            else {
+                swapTiles(markedTile, activeTile);
+                markedTile = -1;
+            }
+        }
+
+        break;
+    case GameEnd:
+        break;
+    }
+
+}
+
 
 void update() {
 
@@ -147,19 +243,22 @@ void display(void)
 
     bool movingTile = false;
     for (int i = 0; i < w * h; i++) {
-        if (tiles[grid[i]]->isMoving()) {
+        if (!movingTile && tiles[grid[i]]->isMoving()) {
             movingTile = true;
-            activeTile = grid[i];
+            tiles[grid[activeTile]]->draw(false);
+            activeTile = i;
         }
         else if (!movingTile && tiles[grid[i]]->containsMouse) {
-            tiles[activeTile]->draw(false);
-            activeTile = grid[i];
+            tiles[grid[activeTile]]->draw(false);
+            activeTile = i;
         } 
-        else {
+        else if (i != markedTile) {
             tiles[grid[i]]->draw(false);
         }
     }
-    tiles[activeTile]->draw(true);
+    if (markedTile != -1)
+        tiles[grid[markedTile]]->draw(!movingTile);
+    tiles[grid[activeTile]]->draw(!movingTile);
 
     glutSwapBuffers();
 }
@@ -193,6 +292,7 @@ int main(int argc, char* argv[])
     glutDisplayFunc(display);
     glutMouseFunc(mouseClick);
     glutMotionFunc(mouseMove);
+    glutKeyboardFunc(keyboard);
     glutPassiveMotionFunc(mouseMove);
     glutIdleFunc(update);
 
