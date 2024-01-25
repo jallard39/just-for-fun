@@ -9,7 +9,7 @@
 #include <time.h>
 #include <string>
 
-#include "Button.h";
+#include "Button.h"
 
 using namespace std;
 
@@ -29,7 +29,7 @@ Button* buttonTryAgain;
 
 void (*tryAgain)();
 
-float gridSize = 30;
+int gridSize = 30;
 int gridDimensions[] = { 30, 20 };
 
 int** grid;
@@ -58,14 +58,14 @@ void startGame() {
 void init(void)
 {
     // Set up buttons
-    buttonStart = new Button("Start Game", (gridDimensions[0]*0.5) - 3, (gridDimensions[1]*0.35), 6, 2, startGame);
-    buttonTryAgain = new Button("Play Again", (gridDimensions[0] * 0.5) - 3, (gridDimensions[1] * 0.35), 6, 2, tryAgain);
+    buttonStart = new Button("Start Game", (gridDimensions[0]*0.5f) - 3, (gridDimensions[1]*0.35f), 6, 2, startGame);
+    buttonTryAgain = new Button("Play Again", (gridDimensions[0] * 0.5f) - 3, (gridDimensions[1] * 0.35f), 6, 2, tryAgain);
     
     // Set up game variables
     playerDirection = 0;
     playerLength = 1;
-    headPosition[0] = 0.5 * gridDimensions[0];
-    headPosition[1] = 0.35 * gridDimensions[1];
+    headPosition[0] = (int)(0.5 * gridDimensions[0]);
+    headPosition[1] = (int)(0.35 * gridDimensions[1]);
     curTime = 0;
     preTime = 0;
     deltaTime = 0;
@@ -85,7 +85,7 @@ void init(void)
     grid[headPosition[0]][headPosition[1]] = 1;
 
     // Set up food
-    srand(time(NULL));
+    srand((int)time(NULL));
     do {
         foodPosition[0] = rand() % gridDimensions[0];
         foodPosition[1] = rand() % gridDimensions[1];
@@ -96,12 +96,12 @@ void init(void)
 
 // = = = = = Helper Functions = = = = =
 
-void drawSquare(int x, int y, int size) {
+void drawSquare(int x, int y, float size) {
     glBegin(GL_POLYGON);
-    glVertex2f(x, y);
-    glVertex2f(x + size, y);
+    glVertex2i(x, y);
+    glVertex2f(x + size, (float)y);
     glVertex2f(x + size, y + size);
-    glVertex2f(x, y + size);
+    glVertex2f((float)x, y + size);
     glEnd();
 }
 
@@ -139,7 +139,7 @@ float textOffsetX(string text) {
             offset += 9;
     }
 
-    return (0.5 * offset / gridSize);
+    return (0.5f * offset / gridSize);
 }
 
 
@@ -262,9 +262,9 @@ void mouseClick(int button, int state, int x, int y) {
 
 void mouseMove(int x, int y) {
     if (gameState == MainMenu)
-        buttonStart->checkCollision(x / gridSize, ((gridDimensions[1] * gridSize) - y) / gridSize);
+        buttonStart->checkCollision(x / (float)gridSize, (((float)gridDimensions[1] * (float)gridSize) - y) / (float)gridSize);
     if (gameState == GameOver)
-        buttonTryAgain->checkCollision(x / gridSize, ((gridDimensions[1] * gridSize) - y) / gridSize);
+        buttonTryAgain->checkCollision((float)x / (float)gridSize, (((float)gridDimensions[1] * (float)gridSize) - (float)y) / (float)gridSize);
 }
 
 
@@ -282,12 +282,12 @@ void display(void)
     case MainMenu:
 
         glColor3f(1.0f, 1.0f, 1.0f);
-        drawText("Welcome to Snake!", 0.5*gridDimensions[0] - textOffsetX("Welcome to Snake!"), 0.75*gridDimensions[1]);
-        drawText("WASD to move", 0.5 * gridDimensions[0] - textOffsetX("WASD to move"), 0.75 * gridDimensions[1] - 1.75);
-        drawText("SPACE to restart", 0.5 * gridDimensions[0] - 0.85*textOffsetX("SPACE to restart"), 0.75 * gridDimensions[1] - 2.75);
+        drawText("Welcome to Snake!", 0.5f*gridDimensions[0] - textOffsetX("Welcome to Snake!"), 0.75f*gridDimensions[1]);
+        drawText("WASD to move", 0.5f * gridDimensions[0] - textOffsetX("WASD to move"), 0.75f * gridDimensions[1] - 1.75f);
+        drawText("SPACE to restart", 0.5f * gridDimensions[0] - 0.85f*textOffsetX("SPACE to restart"), 0.75f * gridDimensions[1] - 2.75f);
         drawText("Don't hit yourself. Go for the high score!", 
-            0.5 * gridDimensions[0] - 0.85 * textOffsetX("Don't hit yourself. Go for the high score!"), 
-            0.75 * gridDimensions[1] - 4.5);
+            0.5f * gridDimensions[0] - 0.85f * textOffsetX("Don't hit yourself. Go for the high score!"), 
+            0.75f * gridDimensions[1] - 4.5f);
         buttonStart->draw(gridSize);
 
         break;
@@ -329,13 +329,13 @@ void display(void)
 
         // draw game over box
         glColor3f(0.0f, 0.0f, 0.0f);
-        drawSquare(0.5 * gridDimensions[0] - 5, 0.5 * gridDimensions[1] - 5, 10.5);
+        drawSquare((int)(0.5 * gridDimensions[0] - 5), (int)(0.5 * gridDimensions[1] - 5), 10.5f);
         buttonTryAgain->draw(gridSize);
 
         glColor3f(1.0f, 1.0f, 1.0f);
-        drawText("Game Over!", 0.5 * gridDimensions[0] - 1.0f * textOffsetX("Game Over!"), 0.65 * gridDimensions[1]);
+        drawText("Game Over!", 0.5f * gridDimensions[0] - 1.0f * textOffsetX("Game Over!"), 0.65f * gridDimensions[1]);
         score = "Final score: " + to_string(playerLength - 1);
-        drawText(score, 0.5 * gridDimensions[0] - 0.8f * textOffsetX("Final score:   "), 0.65 * gridDimensions[1] - 2);
+        drawText(score, 0.5f * gridDimensions[0] - 0.8f * textOffsetX("Final score:   "), 0.65f * gridDimensions[1] - 2);
 
         break;
     }

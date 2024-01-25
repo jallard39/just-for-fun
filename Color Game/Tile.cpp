@@ -28,6 +28,11 @@ Tile::Tile(int numID, float x, float y, float c1, float c2, float c3) {
 	rootMovPos[1] = pos[1];
 }
 
+Tile::Tile(int numID, int x, int y, float c1, float c2, float c3) :
+	Tile(numID, (float)x, (float)y, c1, c2, c3) {
+
+}
+
 int Tile::getID() {
 	return id;
 }
@@ -57,6 +62,10 @@ void Tile::setPosition(float x, float y) {
 	pos[1] = y;
 	rootMovPos[0] = pos[0];
 	rootMovPos[1] = pos[1];
+}
+
+void Tile::setPosition(int x, int y) {
+	setPosition((float)x, (float)y);
 }
 
 void Tile::setMousePosition(float x, float y) {

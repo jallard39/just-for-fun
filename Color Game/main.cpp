@@ -19,8 +19,8 @@ enum GameState {
     GameEnd
 };
 
-float gridSize = 80;
-int gridDimensions[] = { 7, 7 };
+float gridSize = 100;
+int gridDimensions[] = { 5, 5 };
 
 int w = gridDimensions[0];
 int h = gridDimensions[1];
@@ -129,7 +129,7 @@ void init(void)
 
     // initialize tiles
     initTiles();
-    srand(time(NULL));
+    srand((int)time(NULL));
     grid[0] = 0;
     grid[w * h - h] = w * h - h;
     grid[w * h - 1] = w * h - 1;
@@ -188,6 +188,7 @@ void keyboard(unsigned char key, int x, int y) {
     switch (gameState) {
     case Game:
 
+        // Use the arrow keys to change selected tile
         if (key == 'w') {
             if ((activeTile + 1) % h != 0) {
                 activeTile += 1;
@@ -208,6 +209,7 @@ void keyboard(unsigned char key, int x, int y) {
                 activeTile -= h;
             }
         }
+        // Use the spacebar to select tiles to swap
         else if (key == 32) {
             if (markedTile == -1) {
                 markedTile = activeTile;

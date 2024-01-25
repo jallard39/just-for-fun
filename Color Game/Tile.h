@@ -22,6 +22,7 @@ public:
 	Tile(int numID, float x, float y);
 	Tile(int numID, float c1, float c2, float c3);
 	Tile(int numID, float x, float y, float c1, float c2, float c3);
+	Tile(int numID, int x, int y, float c1, float c2, float c3);
 	int getID();
 	bool isMoving();
 	void stopMoving();
@@ -29,6 +30,7 @@ public:
 	float getColor(int rgb);
 	void setColor(float c1, float c2, float c3);
 	void setPosition(float x, float y);
+	void setPosition(int x, int y);
 	void setMousePosition(float x, float y);
 	void toggleMovement(int button, int state, float x, float y);
 	void move(float x, float y);
